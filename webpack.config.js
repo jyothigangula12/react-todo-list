@@ -1,34 +1,46 @@
-var webpack = require('webpack');
 var path = require('path');
+var webpack = require('webpack')
+var autoprefixer = require('autoprefixer');
+
 module.exports = {
-	devtool :'inline-source-map',
-    entry: [
-    'webpack-hot-middleware/client',
-    './client/client.js'
-    ],
+    entry: ['babel-polyfill', './client/client.js'],
     /*devServer: {
         inline: true,
         port: 3001
     },*/
     output: {
-        path: path.join(__dirname, "dist"),
-        //we can use require("path").resolve("./dist")
+        path: path.join(__dirname, "public"),
         filename: 'bundle.js',
         publicPath: '/'
     },
-    plugins: [
+    plugins: process.env.NODE_ENV === 'production' ? [
         new webpack.optimize.DedupePlugin(),
         new webpack.NoErrorsPlugin(),
         new webpack.optimize.OccurrenceOrderPlugin(),
-        new webpack.HotModuleReplacementPlugin(),
         new webpack.optimize.UglifyJsPlugin()
-    ] ,
+    ] : [],
 
     module: {
         loaders: [{
             test: /\.js$/,
             exclude: /node_modules/,
-            loader: 'babel-loader?presets[]=es2015&presets[]=react&presets[]=react-hmre'
-        }]
-}
+            loader: 'babel-loader?presets[]=es2015&presets[]=react'
+        }, {
+            test: /\.scss$/,
+            include: /src/,
+            loaders: "style!css!autoprefixer!sass"
+        }, {
+            test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+            loader: 'url'
+        }, {
+            test: /\.(png|jpg|jpeg|gif|svg|woff|woff2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+            loader: 'url-loader?limit=10000',
+        }, {
+            test: /\.(eot|ttf|wav|mp3|pdf)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+            loader: 'file-loader',
+        }, ]
+    },
+    postcss: [autoprefixer({
+        browsers: ['last 2 versions']
+    })]
 }
